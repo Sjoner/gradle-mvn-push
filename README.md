@@ -33,5 +33,5 @@ apply from: 'https://raw.github.com/jd-lmq/gradle-mvn-push/master/jar-mvn-push.g
 You can now build and push:
 
 ```bash
-$ gradle clean build uploadArchives
+$ gradle -p {moduleName} clean build uploadArchives --info
 ```
