@@ -17,8 +17,9 @@
 apply plugin: 'maven'
 apply plugin: 'signing'
 
+
 def isReleaseBuild() {
-    return VERSION_NAME.contains("SNAPSHOT") == false
+    return hasProperty("IS_RELEASE_BUILD")?"true" == IS_RELEASE_BUILD:false
 }
 
 def getReleaseRepositoryUrl() {
@@ -47,13 +48,17 @@ afterEvaluate { project ->
 
                 pom.groupId = GROUP
                 pom.artifactId = POM_ARTIFACT_ID
-                pom.version = VERSION_NAME
 
-                repository(url: getReleaseRepositoryUrl()) {
-                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
-                }
-                snapshotRepository(url: getSnapshotRepositoryUrl()) {
-                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+                if(isReleaseBuild()){
+                    pom.version = VERSION_NAME
+                    repository(url: getReleaseRepositoryUrl()) {
+                        authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+                    }
+                }else{
+                    pom.version = VERSION_NAME + SNAPSHOT_SUFFIX
+                    repository(url: getSnapshotRepositoryUrl()) {
+                        authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+                    }
                 }
             }
         }
@@ -66,6 +71,8 @@ afterEvaluate { project ->
 
     task androidJavadocs(type: Javadoc) {
         source = android.sourceSets.main.java.srcDirs
+        options.addStringOption("charset", "UTF-8")
+        failOnError = false
         classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
     }
 
@@ -81,6 +88,6 @@ afterEvaluate { project ->
 
     artifacts {
         archives androidSourcesJar
-//        archives androidJavadocsJar
+        archives androidJavadocsJar
     }
 }
